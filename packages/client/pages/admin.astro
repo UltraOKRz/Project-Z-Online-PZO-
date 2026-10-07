@@ -1,0 +1,500 @@
+---
+import DefaultLayout from '../layouts/default.astro';
+import mobsData from '../../server/data/mobs.json';
+import itemsData from '../../server/data/items.json';
+
+const mobsList = Object.entries(mobsData).map(([key, data]) => ({ key, ...data }));
+const itemsList = Object.entries(itemsData).map(([key, data]) => ({ key, ...data }));
+---
+
+<DefaultLayout title="Admin Database & Control Panel">
+    <div class="db-container">
+        <header class="db-header">
+            <div class="brand">
+                <span class="logo-icon">👑</span>
+                <h1>Project Z Database & Admin Hub</h1>
+            </div>
+            <div class="search-box">
+                <input type="text" id="globalSearch" placeholder="🔍 ค้นหา ไอเทม, มอนสเตอร์, ID, สกิล..." />
+            </div>
+        </header>
+
+        <nav class="db-tabs">
+            <button class="tab-btn active" data-tab="itemsTab">🗡️ Items Database (<span id="itemCount">{itemsList.length}</span>)</button>
+            <button class="tab-btn" data-tab="mobsTab">🐉 Mobs Database (<span id="mobCount">{mobsList.length}</span>)</button>
+            <button class="tab-btn" data-tab="favoritesTab">⭐ Favorites (<span id="favCount">0</span>)</button>
+        </nav>
+
+        <main class="db-content">
+            <!-- Items Section -->
+            <section id="itemsTab" class="tab-content active">
+                <div class="filter-bar">
+                    <button class="filter-btn active" data-type="all">ทั้งหมด</button>
+                    <button class="filter-btn" data-type="weapon">อาวุธ (Weapons)</button>
+                    <button class="filter-btn" data-type="armor">ชุดเกราะ (Armor)</button>
+                    <button class="filter-btn" data-type="edible">ยา/ของกิน (Consumables)</button>
+                    <button class="filter-btn" data-type="object">วัตถุดิบ/อื่นๆ</button>
+                </div>
+                <div class="grid-layout" id="itemsGrid">
+                    {itemsList.map((item) => (
+                        <div class="db-card item-card" data-key={item.key} data-name={item.name.toLowerCase()} data-type={item.type || 'object'}>
+                            <button class="fav-star-btn" data-fav-key={item.key} data-fav-type="item" title="บันทึกใน Favorites">⭐</button>
+                            <div class="card-icon">
+                                <img src={`/img/items/${item.key}.png`} onerror="this.onerror=null; this.src='/img/icons/hud.png';" alt={item.name} />
+                            </div>
+                            <div class="card-details">
+                                <h3>{item.name}</h3>
+                                <span class="tag-key">Key: <code>{item.key}</code></span>
+                                <span class="tag-type">{item.type || 'item'}</span>
+                                {item.level && <span class="tag-level">Req Lv: {item.level}</span>}
+                            </div>
+                            <div class="card-stats">
+                                {item.attackStats && (
+                                    <div class="stat-row">⚔️ Atk: Slsh:{item.attackStats.slash||0} Stab:{item.attackStats.stab||0} Crsh:{item.attackStats.crush||0}</div>
+                                )}
+                                {item.defenseStats && (
+                                    <div class="stat-row">🛡️ Def: Slsh:{item.defenseStats.slash||0} Stab:{item.defenseStats.stab||0} Crsh:{item.defenseStats.crush||0}</div>
+                                )}
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn spawn-item-btn" data-cmd={`/spawn ${item.key} 1`}>🎁 เสก 1 ชิ้น</button>
+                                <button class="action-btn spawn-item-btn" data-cmd={`/spawn ${item.key} 100`}>🎁 เสก 100 ชิ้น</button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            <!-- Mobs Section -->
+            <section id="mobsTab" class="tab-content">
+                <div class="grid-layout" id="mobsGrid">
+                    {mobsList.map((mob) => (
+                        <div class="db-card mob-card" data-key={mob.key} data-name={mob.name.toLowerCase()}>
+                            <button class="fav-star-btn" data-fav-key={mob.key} data-fav-type="mob" title="บันทึกใน Favorites">⭐</button>
+                            <div class="card-icon mob-icon">
+                                <img src={`/img/monsters/${mob.key}.png`} onerror="this.onerror=null; this.src='/img/icons/hud.png';" alt={mob.name} />
+                            </div>
+                            <div class="card-details">
+                                <h3>{mob.name} <span class="mob-level">Lv.{mob.level}</span></h3>
+                                <span class="tag-key">Key: <code>{mob.key}</code></span>
+                                <div class="stat-row">❤️ HP: <strong>{mob.hitPoints}</strong></div>
+                                {mob.description && <p class="desc">{Array.isArray(mob.description) ? mob.description[0] : mob.description}</p>}
+                            </div>
+                            <div class="drop-list">
+                                <strong>🎁 Items Drop:</strong>
+                                {mob.drops && mob.drops.length > 0 ? (
+                                    <ul>
+                                        {mob.drops.map((d: any) => (
+                                            <li><code>{d.key}</code> (โอกาส: {(100000 / (d.chance || 10000)).toFixed(1)}%)</li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <span class="no-drop">- ใช้ Drop Table รวม -</span>
+                                )}
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn spawn-mob-btn" data-cmd={`/mob ${mob.key}`}>🐉 เสกมอนตัวนี้</button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            <!-- Favorites Section -->
+            <section id="favoritesTab" class="tab-content">
+                <div class="fav-header">
+                    <h2>รายการที่บันทึกไว้ (Favorites List)</h2>
+                    <p>คลิกดาว ⭐ บนการ์ดไอเทมหรือมอนสเตอร์ เพื่อเก็บไว้ใช้งานบ่อยๆ ที่นี่</p>
+                </div>
+                <div class="grid-layout" id="favoritesGrid">
+                    <div class="empty-fav">ยังไม่มีรายการที่บันทึกไว้ กด ⭐ ที่ไอเทมหรือมอนสเตอร์ได้เลย!</div>
+                </div>
+            </section>
+        </main>
+    </div>
+</DefaultLayout>
+
+<style lang="scss">
+    .db-container {
+        min-height: 100vh;
+        background: #0f0f15;
+        color: #e0e0e0;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        padding: 20px 40px;
+    }
+
+    .db-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #2a2a3c;
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+
+            .logo-icon {
+                font-size: 32px;
+            }
+
+            h1 {
+                margin: 0;
+                font-size: 24px;
+                background: linear-gradient(135deg, #a78bfa, #f472b6);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+        }
+
+        .search-box {
+            input {
+                width: 350px;
+                padding: 12px 20px;
+                background: #1e1e2d;
+                border: 1px solid #3b3b54;
+                border-radius: 25px;
+                color: #fff;
+                font-size: 15px;
+                outline: none;
+                transition: all 0.2s ease;
+
+                &:focus {
+                    border-color: #8b5cf6;
+                    box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+                }
+            }
+        }
+    }
+
+    .db-tabs {
+        display: flex;
+        gap: 12px;
+        margin: 20px 0;
+
+        .tab-btn {
+            background: #1e1e2d;
+            border: 1px solid #2e2e42;
+            color: #a0a0b8;
+            padding: 10px 22px;
+            border-radius: 12px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background: #2b2b40;
+                color: #fff;
+            }
+
+            &.active {
+                background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                color: #fff;
+                border-color: transparent;
+                box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+            }
+        }
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+
+        .filter-btn {
+            background: #181824;
+            border: 1px solid #28283a;
+            color: #8888a0;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+
+            &:hover {
+                color: #fff;
+            }
+
+            &.active {
+                background: #312e81;
+                color: #818cf8;
+                border-color: #4338ca;
+            }
+        }
+    }
+
+    .tab-content {
+        display: none;
+
+        &.active {
+            display: block;
+        }
+    }
+
+    .grid-layout {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .db-card {
+        position: relative;
+        background: #181824;
+        border: 1px solid #26263a;
+        border-radius: 16px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+
+        &:hover {
+            transform: translateY(-4px);
+            border-color: #6366f1;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        }
+
+        .fav-star-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+
+            &:hover, &.is-fav {
+                opacity: 1;
+                filter: drop-shadow(0 0 6px #f59e0b);
+            }
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: #222234;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            img {
+                max-width: 40px;
+                max-height: 40px;
+                object-fit: contain;
+            }
+        }
+
+        .card-details {
+            h3 {
+                margin: 0 0 6px 0;
+                font-size: 17px;
+                color: #ffffff;
+            }
+
+            .tag-key {
+                font-size: 12px;
+                color: #8888a0;
+
+                code {
+                    color: #fbbf24;
+                    background: #262638;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                }
+            }
+
+            .tag-type, .tag-level {
+                display: inline-block;
+                font-size: 11px;
+                padding: 2px 8px;
+                background: #312e81;
+                color: #a5b4fc;
+                border-radius: 6px;
+                margin-left: 6px;
+            }
+
+            .desc {
+                font-size: 12px;
+                color: #9ca3af;
+                margin: 6px 0 0 0;
+            }
+        }
+
+        .stat-row {
+            font-size: 12px;
+            color: #34d399;
+            background: #111827;
+            padding: 6px 10px;
+            border-radius: 8px;
+        }
+
+        .drop-list {
+            font-size: 12px;
+            background: #111827;
+            padding: 8px;
+            border-radius: 8px;
+
+            ul {
+                margin: 4px 0 0 16px;
+                padding: 0;
+            }
+
+            .no-drop {
+                color: #6b7280;
+                display: block;
+                margin-top: 4px;
+            }
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+
+            .action-btn {
+                flex: 1;
+                background: #2563eb;
+                color: #fff;
+                border: none;
+                padding: 8px;
+                border-radius: 8px;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.2s;
+
+                &:hover {
+                    background: #1d4ed8;
+                }
+            }
+        }
+    }
+
+    .empty-fav {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 50px;
+        color: #6b7280;
+        font-size: 16px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Tab switching
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                btn.classList.add('active');
+                const target = btn.getAttribute('data-tab');
+                document.getElementById(target)?.classList.add('active');
+            });
+        });
+
+        // Search Filter
+        const searchInput = document.getElementById('globalSearch') as HTMLInputElement;
+        searchInput?.addEventListener('input', (e) => {
+            const query = (e.target as HTMLInputElement).value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.db-card');
+
+            cards.forEach((card) => {
+                const key = card.getAttribute('data-key') || '';
+                const name = card.getAttribute('data-name') || '';
+
+                if (key.includes(query) || name.includes(query)) {
+                    (card as HTMLElement).style.display = 'flex';
+                } else {
+                    (card as HTMLElement).style.display = 'none';
+                }
+            });
+        });
+
+        // Item Sub-Type Filter
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const filterType = btn.getAttribute('data-type');
+                const itemCards = document.querySelectorAll('.item-card');
+
+                itemCards.forEach(card => {
+                    const cardType = card.getAttribute('data-type');
+                    if (filterType === 'all' || cardType === filterType) {
+                        (card as HTMLElement).style.display = 'flex';
+                    } else {
+                        (card as HTMLElement).style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Favorites System (LocalStorage)
+        let favorites: Record<string, string> = JSON.parse(localStorage.getItem('pzo_favs') || '{}');
+
+        function updateFavUI() {
+            const favBtns = document.querySelectorAll('.fav-star-btn');
+            favBtns.forEach(btn => {
+                const key = btn.getAttribute('data-fav-key') || '';
+                if (favorites[key]) {
+                    btn.classList.add('is-fav');
+                } else {
+                    btn.classList.remove('is-fav');
+                }
+            });
+
+            const favGrid = document.getElementById('favoritesGrid');
+            const favCount = document.getElementById('favCount');
+            if (favCount) favCount.textContent = Object.keys(favorites).length.toString();
+
+            if (favGrid) {
+                const favKeys = Object.keys(favorites);
+                if (favKeys.length === 0) {
+                    favGrid.innerHTML = '<div class="empty-fav">ยังไม่มีรายการที่บันทึกไว้ กด ⭐ ที่ไอเทมหรือมอนสเตอร์ได้เลย!</div>';
+                } else {
+                    favGrid.innerHTML = '';
+                    favKeys.forEach(key => {
+                        const originalCard = document.querySelector(`.db-card[data-key="${key}"]`);
+                        if (originalCard) {
+                            const clone = originalCard.cloneNode(true) as HTMLElement;
+                            (clone as HTMLElement).style.display = 'flex';
+                            favGrid.appendChild(clone);
+                        }
+                    });
+                }
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+            if (target.classList.contains('fav-star-btn')) {
+                const key = target.getAttribute('data-fav-key') || '';
+                if (favorites[key]) {
+                    delete favorites[key];
+                } else {
+                    favorites[key] = 'true';
+                }
+                localStorage.setItem('pzo_favs', JSON.stringify(favorites));
+                updateFavUI();
+            }
+
+            // Command copy alert
+            if (target.classList.contains('action-btn')) {
+                const cmd = target.getAttribute('data-cmd') || '';
+                navigator.clipboard.writeText(cmd);
+                alert(`คัดลอกคำสั่งเรียบร้อยแล้ว: ${cmd}\n(สามารถนำไปวางในช่องแชทเกมได้ทันที!)`);
+            }
+        });
+
+        updateFavUI();
+    });
+</script>
