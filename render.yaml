@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: project-z-online-server
+    env: node
+    plan: free
+    buildCommand: yarn install && yarn build
+    startCommand: node ./packages/server/dist/main.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20.0.0
+      - key: ACCEPT_LICENSE
+        value: "true"
