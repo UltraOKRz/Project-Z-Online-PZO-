@@ -32,8 +32,8 @@ export default class Args {
             }
 
             case '--port': {
-                config.port = parseInt(value);
-                config.apiPort = parseInt(value) + 1;
+                config.port = parseInt(process.env.PORT || value);
+                config.apiPort = parseInt(process.env.PORT || value) + 1;
                 break;
             }
 

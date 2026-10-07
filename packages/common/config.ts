@@ -117,6 +117,8 @@ for (let key in envConfig) {
     config[camelCaseKey] = envConfig[key] as never;
 }
 
+if (process.env.PORT) config.port = parseInt(process.env.PORT, 10);
+
 config.hubHost ||= config.host;
 config.hubWsHost ||= config.hubHost;
 config.adminHost ||= config.hubHost;
