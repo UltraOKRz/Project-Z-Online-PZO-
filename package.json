@@ -15,6 +15,7 @@
         "hub": "yarn packages hub",
         "start": "yarn packages start",
         "build": "yarn packages build",
+        "render-build": "corepack enable && yarn install --no-immutable && yarn build",
         "lint:script": "eslint --cache packages/**/*.{ts,astro} --ignore-path .gitignore",
         "lint:style": "stylelint --cache packages/**/*.{scss,astro} --ignore-path .gitignore",
         "lint:fix": "yarn lint:script --fix && yarn lint:style --fix",
