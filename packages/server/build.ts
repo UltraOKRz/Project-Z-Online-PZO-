@@ -5,7 +5,7 @@ await esbuild.build({
     outfile: './dist/main.js',
     minify: true,
     bundle: true,
-    sourcemap: true,
+    sourcemap: false,
     format: 'esm',
     platform: 'node',
     external: ['uws', 'discord.js'],
