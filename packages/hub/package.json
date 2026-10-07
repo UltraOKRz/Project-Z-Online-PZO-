@@ -4,7 +4,7 @@
     "scripts": {
         "hub": "tsx --watch --preserve-symlinks ./src/main.ts",
         "build": "tsc && tsx --preserve-symlinks ./build.ts",
-        "start": "node --enable-source-maps ./dist/main.js"
+        "start": "node ./dist/main.js"
     },
     "dependencies": {
         "@kaetram/common": "workspace:*",
