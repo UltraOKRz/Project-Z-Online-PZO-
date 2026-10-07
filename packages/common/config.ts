@@ -91,8 +91,14 @@ function camelCase(str: string): string {
         .replace(/([_-][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''));
 }
 
-let { NODE_ENV } = process.env,
-    env = dotenv.load({ path: `../../.env`, defaults: '../../.env.defaults' }),
+import path from 'node:path';
+
+let cwdEnv = path.resolve(process.cwd(), '.env'),
+    cwdDefaults = path.resolve(process.cwd(), '.env.defaults'),
+    envPath = (await fs.stat(cwdEnv).catch(() => false)) ? cwdEnv : '../../.env',
+    defaultsPath = (await fs.stat(cwdDefaults).catch(() => false)) ? cwdDefaults : '../../.env.defaults',
+    { NODE_ENV } = process.env,
+    env = dotenv.load({ path: envPath, defaults: defaultsPath }),
     nodeEnvConfig = `../../.env.${NODE_ENV}`,
     nodeEnvConfigExists = await fs.stat(nodeEnvConfig).catch(() => false);
 

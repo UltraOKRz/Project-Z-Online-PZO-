@@ -455,4 +455,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# https://www.toptal.com/developers/gitignore?templates=git,node,astro,cypressio,linux,macos,windows,visualstudiocode,webstorm,vim,emacs
+# AI waste directory and cache rules
+\0.aเศษซากอรยะธรรมของAI/
+0.aเศษซากอรยะธรรมของAI/
+__pycache__/
+*.pyc
+

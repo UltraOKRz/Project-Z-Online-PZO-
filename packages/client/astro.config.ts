@@ -111,6 +111,7 @@ if (import.meta.env.PROD)
 
 // https://astro.build/config
 export default defineConfig({
+    root: decodeURIComponent(fileURLToPath(new URL('.', import.meta.url))),
     srcDir: './',
     site: 'https://kaetram.com/',
     trailingSlash: 'always',
